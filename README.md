@@ -3,8 +3,7 @@ MineSweeper
 
 This is my initial implementation of MineSweeper on Google Glass
 
-Currently, you're presented a 9x9 mine field. Move the yellow dot about the field 
-by moving your head. Speak "reveal" to reveal a tile.
+Currently, you're presented a 9x9 mine field. Move the yellow dot about the field by moving your head. Speak "reveal" to reveal a tile. Swiping left on the pad reveals a tile. Swiping right flags or unflags a tile. Game ends when a bomb is exposed. 
 
 ## Running on Glass
 
@@ -14,14 +13,14 @@ on the command line:
 
     $ adb install -r MineSweeper.apk
 
-To start the sample, say "ok glass, minesweepwe" from the Glass clock
+To start the sample, say "ok glass, minesweeper" from the Glass clock
 screen or use the touch menu.
 
 ## TODO
 I plan to implement the following features (in no particular order):
 * Use Graphics instead of text
 * Scoreboard
-* Timer
+* ~~Timer~~
 * Selectable difficultly
-* Use Gestures
+* ~~Use Gestures~~
 * Others as I think of them
