@@ -40,7 +40,11 @@ public class MineTile {
 	}
 
 	public void flag() {
-		this.state = 1;
+		if (this.state == 0) {
+			this.state = 1;
+		} else if (this.state == 1) {
+			this.state = 0;
+		}
 	}
 
 	public void reveal() {

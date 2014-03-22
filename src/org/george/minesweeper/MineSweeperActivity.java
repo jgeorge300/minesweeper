@@ -25,8 +25,11 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder.AudioSource;
 import android.os.Bundle;
+import android.view.MotionEvent;
 
-import com.google.android.glass.sample.compass.util.MathUtils;
+import com.google.android.glass.touchpad.Gesture;
+import com.google.android.glass.touchpad.GestureDetector;
+
 
 public class MineSweeperActivity extends Activity implements SensorEventListener {
 
@@ -35,6 +38,8 @@ public class MineSweeperActivity extends Activity implements SensorEventListener
 	private MineSweeperView mMineSweeperView;
 
 	private SensorManager mSensorManager;
+	private GestureDetector mGestureDetector;
+
 
 	private RecordingThread mRecordingThread;
 	private int mBufferSize;
@@ -58,6 +63,8 @@ public class MineSweeperActivity extends Activity implements SensorEventListener
 		mAudioBuffer = new short[mBufferSize / 2];
 
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+		mGestureDetector = createGestureDetector(this);
+
 
 	}
 
@@ -92,6 +99,16 @@ public class MineSweeperActivity extends Activity implements SensorEventListener
 		}
 		unregisterListeners();
 	}
+	
+//    @Override
+//    public boolean onKeyDown(int keycode, KeyEvent event) {
+//        if (keycode == KeyEvent.KEYCODE_DPAD_CENTER) {
+//            Log.d("DPAD","Center");
+//            return true;
+//        } 
+//        return false;
+//    }
+
 
 	private class RecordingThread extends Thread {
 
@@ -144,6 +161,21 @@ public class MineSweeperActivity extends Activity implements SensorEventListener
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
 		return;
 	}
+	
+	private static float GetHeadingDiff(float start, float end)
+    {
+		float diff = end - start;
+		float absDiff = Math.abs(diff);
+
+        if (absDiff <= 180f)
+        {
+            return absDiff == 180f ? absDiff : diff;
+        } else if (end > start) {
+            return absDiff - 360f;
+        } else {
+            return 360f - absDiff;
+        }
+    }
 
 	@Override
 	public void onSensorChanged(SensorEvent event) {
@@ -159,19 +191,19 @@ public class MineSweeperActivity extends Activity implements SensorEventListener
 			pitch = (pitch < -20) ? -20 : pitch;
 			int y = 180 + (int)(9 * pitch);
 
-			float magneticHeading = MathUtils.mod((float) Math.toDegrees(mOrientation[0]), 360.0f);
+			float currentHeading = (float) Math.toDegrees(mOrientation[0]);
 
 			int x;
-
 			if (previousHeading == -1) {
-				x = 180;
+				previousHeading = currentHeading;
+				x = (int)((640 * .75) / 2);
 			} else {
-				float change = magneticHeading - previousHeading;
-				x =  (int) (mMineSweeperView.getTarget().getX() - change*20);
+				x = mMineSweeperView.getTarget().getX();
 			}
+			x += (int) (20 * GetHeadingDiff(previousHeading, currentHeading));
 			x = (x > 640) ? 640 : x;
 			x = (x < 0) ? 0 : x;
-			previousHeading = magneticHeading;
+			previousHeading = currentHeading;
 
 			mMineSweeperView.getTarget().setX(x);
 			mMineSweeperView.getTarget().setY(y);
@@ -187,6 +219,46 @@ public class MineSweeperActivity extends Activity implements SensorEventListener
 	private void unregisterListeners() {
 		mSensorManager.unregisterListener(this);
 	}
+	
+    private GestureDetector createGestureDetector(Context context) {
+    GestureDetector gestureDetector = new GestureDetector(context);
+        //Create a base listener for generic gestures
+        gestureDetector.setBaseListener( new GestureDetector.BaseListener() {
+            @Override
+            public boolean onGesture(Gesture gesture) {
+                if (gesture == Gesture.TAP) {
+                    // do something on tap
+                    return false;
+                } else if (gesture == Gesture.TWO_TAP) {
+                    // do something on two finger tap
+                    return false;
+                } else if (gesture == Gesture.SWIPE_RIGHT) {
+                	mMineSweeperView.reveal();
+                    return true;
+                } else if (gesture == Gesture.SWIPE_LEFT) {
+                    // do something on left (backwards) swipe
+                	mMineSweeperView.flag();
+                    return true;
+                }
+                return false;
+            }
+        });
 
+        return gestureDetector;
+    }
+
+    /*
+     * Send generic motion events to the gesture detector
+     */
+    @Override
+    public boolean onGenericMotionEvent(MotionEvent event) {
+        if (mGestureDetector != null) {
+            return mGestureDetector.onMotionEvent(event);
+        }
+        return false;
+    }
 }
+
+
+
 

@@ -16,6 +16,7 @@
 
 package org.george.minesweeper.engine;
 
+import java.util.Date;
 import java.util.Random;
 
 import android.graphics.Canvas;
@@ -30,6 +31,11 @@ public class MineField {
 	int numOfMines = 0;
 	int flaggedMines = 0;
 	
+	boolean isGameOver = false;
+	
+	Date start = null;
+	Date end = null;
+	
 	public MineField(int columns, int rows, int numOfMines) {
 		this.columns = columns;
 		this.rows = rows;
@@ -41,7 +47,7 @@ public class MineField {
 				field[i][j] = new MineTile();
 			}
 		}
-		Random rand = new Random(123456);
+		Random rand = new Random();
 		int row,col;
 		for (int i = 0; i < numOfMines; i++) {
 			row = rand.nextInt(rows)+1;
@@ -86,8 +92,14 @@ public class MineField {
 	
 	public void flag(int col, int row)
 	{
+		if (start == null)
+			  start = new Date();
+
 		field[col][row].flag();
-		flaggedMines += 1;
+		if (field[col][row].getState() == 0)
+			flaggedMines -= 1;
+		else if (field[col][row].getState() == 1)
+			flaggedMines += 1;
 	}
 
 	public void reveal(int col, int row)
@@ -95,8 +107,18 @@ public class MineField {
 		if (col < 1 || col > columns) return;
 		if (row < 1 || row > rows) return;
 		if (field[col][row].getState() != 0) return;
+
+		if (start == null)
+		  start = new Date();
 		
 		field[col][row].reveal();
+
+		if (field[col][row].hasMine()) {
+		  isGameOver = true;
+		  end = new Date();
+		  return;
+		}
+
 		if (field[col][row].getMinedNeighbors() == 0) {
 			reveal(col+1,row+1);
 			reveal(col+1,row);
@@ -119,6 +141,7 @@ public class MineField {
 				if (field[col][row].getState() == 0) {
 					cell = "X";
 				} else if (field[col][row].getState() == 1) {
+					mPaint.setColor(Color.MAGENTA);
 					cell = "F";
 				} else {
 					if (field[col][row].hasMine()) {
@@ -132,10 +155,33 @@ public class MineField {
 				}
 				int x = (int)((width/2)+ (col-1)*width);
 				int y = (int)((height/2)+ (row-1)*height);
-				canvas.drawText(cell, x, y, mPaint);
+				canvas.drawText(cell, x, y+5, mPaint);
 				mPaint.setColor(Color.WHITE);
 			}
 		}
+	}
+	
+	public boolean isGameOver() {
+		return isGameOver;
+//	  if (isGameOver) return true;
+//      for(int col = 1; col <= columns; col++)
+//        for(int row = 1; row <= rows; row++)
+//           if (field[col][row].hasMine() && field[col][row].getState() == 2) {
+//             isGameOver = true;
+//             return true;
+//           }
+//	  
+//      return false;
+	}
+	
+	public long getTime() {
+	  if (start == null) {
+	    return 0;
+	  } else if (end != null) {
+	    return (end.getTime() - start.getTime()) / 1000; 
+	  } else {
+	    return (new Date().getTime() - start.getTime()) / 1000; 
+	  }
 	}
 	
 }
