@@ -100,16 +100,6 @@ public class MineSweeperActivity extends Activity implements SensorEventListener
 		unregisterListeners();
 	}
 	
-//    @Override
-//    public boolean onKeyDown(int keycode, KeyEvent event) {
-//        if (keycode == KeyEvent.KEYCODE_DPAD_CENTER) {
-//            Log.d("DPAD","Center");
-//            return true;
-//        } 
-//        return false;
-//    }
-
-
 	private class RecordingThread extends Thread {
 
 		private boolean mShouldContinue = true;
