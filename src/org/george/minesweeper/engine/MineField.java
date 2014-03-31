@@ -22,23 +22,28 @@ import java.util.Random;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 
 public class MineField {
-	
+	public enum GameState {WON, LOST, PLAYING};
+	public static int LO = 0;
+
 	MineTile[][] field;
 	int columns = 0; 
 	int rows = 0;
 	int numOfMines = 0;
 	int flaggedMines = 0;
-	
-	boolean isGameOver = false;
-	
+	int revealedSpaces = 0;
+
+	GameState gameState = GameState.PLAYING;
+
 	Date start = null;
 	Date end = null;
-	
+
 	public MineField(int columns, int rows, int numOfMines) {
 		this.columns = columns;
 		this.rows = rows;
+		this.numOfMines = numOfMines;
 		
 		field = new MineTile[columns+2][];
 		for (int i = 0; i < columns+2; i++) {
@@ -69,9 +74,9 @@ public class MineField {
 		mf.printBoard();
 		mf.reveal(5, 6);
 		mf.printBoard();
-		
+
 	}
-	
+
 	void printBoard() {
 		for(int col = 1; col <= columns; col++) {
 			for(int row = 1; row <= rows; row++) {
@@ -89,11 +94,11 @@ public class MineField {
 			System.out.println();
 		}
 	}
-	
+
 	public void flag(int col, int row)
 	{
 		if (start == null)
-			  start = new Date();
+			start = new Date();
 
 		field[col][row].flag();
 		if (field[col][row].getState() == 0)
@@ -109,14 +114,21 @@ public class MineField {
 		if (field[col][row].getState() != 0) return;
 
 		if (start == null)
-		  start = new Date();
-		
+			start = new Date();
+
 		field[col][row].reveal();
+		revealedSpaces++;
 
 		if (field[col][row].hasMine()) {
-		  isGameOver = true;
-		  end = new Date();
-		  return;
+			gameState = GameState.LOST;
+			end = new Date();
+			return;
+		}
+
+		if ((flaggedMines == numOfMines) && (revealedSpaces + flaggedMines == (columns*rows))) {
+			gameState = GameState.WON;				
+			end = new Date();
+			return;
 		}
 
 		if (field[col][row].getMinedNeighbors() == 0) {
@@ -132,10 +144,10 @@ public class MineField {
 	}
 
 	public void draw(Canvas canvas, Paint mPaint) {
-        int width = (int) (canvas.getWidth()*.75 / columns);
-        int height = (int) (canvas.getHeight() / rows);
-        
-        String cell = null;
+		int width = (int) (canvas.getWidth()*.75 / columns);
+		int height = (int) (canvas.getHeight() / rows);
+
+		String cell = null;
 		for(int col = 1; col <= columns; col++) {
 			for(int row = 1; row <= rows; row++) {
 				if (field[col][row].getState() == 0) {
@@ -145,7 +157,7 @@ public class MineField {
 					cell = "F";
 				} else {
 					if (field[col][row].hasMine()) {
-						
+
 						mPaint.setColor(Color.RED);
 						cell = "*";
 					} else {
@@ -160,28 +172,23 @@ public class MineField {
 			}
 		}
 	}
-	
-	public boolean isGameOver() {
-		return isGameOver;
-//	  if (isGameOver) return true;
-//      for(int col = 1; col <= columns; col++)
-//        for(int row = 1; row <= rows; row++)
-//           if (field[col][row].hasMine() && field[col][row].getState() == 2) {
-//             isGameOver = true;
-//             return true;
-//           }
-//	  
-//      return false;
+
+	public GameState gameState() {
+		return this.gameState;
 	}
-	
+
 	public long getTime() {
-	  if (start == null) {
-	    return 0;
-	  } else if (end != null) {
-	    return (end.getTime() - start.getTime()) / 1000; 
-	  } else {
-	    return (new Date().getTime() - start.getTime()) / 1000; 
-	  }
+		if (start == null) {
+			return 0;
+		} else if (end != null) {
+			return (end.getTime() - start.getTime()) / 1000; 
+		} else {
+			return (new Date().getTime() - start.getTime()) / 1000; 
+		}
 	}
 	
+	public int getFlagged() {
+		return flaggedMines;
+	}
+
 }

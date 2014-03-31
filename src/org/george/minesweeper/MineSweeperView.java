@@ -59,11 +59,18 @@ public class MineSweeperView extends SurfaceView {
 		// Update the display.
 		Canvas canvas = getHolder().lockCanvas();
 		if (canvas != null) {
-			if (mf.isGameOver()) {
+			if (mf.gameState() == MineField.GameState.LOST) {
 				mPaint.setColor(Color.RED);
 				mPaint.setTextAlign(Align.CENTER);
 				mPaint.setTextSize(100);
 				canvas.drawText("BOOM!", (int)(width/2), (int)(height/2), mPaint);
+				mPaint.setTextAlign(Align.LEFT);
+				mPaint.setTextSize(30);				
+			} else if (mf.gameState() == MineField.GameState.WON) {
+				mPaint.setColor(Color.RED);
+				mPaint.setTextAlign(Align.CENTER);
+				mPaint.setTextSize(100);
+				canvas.drawText("YOU WON!", (int)(width/2), (int)(height/2), mPaint);
 				mPaint.setTextAlign(Align.LEFT);
 				mPaint.setTextSize(30);
 
@@ -86,7 +93,10 @@ public class MineSweeperView extends SurfaceView {
 			}
 			mPaint.setColor(Color.GREEN);
 
-			canvas.drawText("" + mf.getTime(), (int)(width*.75 + 20), (int)(height/2), mPaint);
+			canvas.drawText("Time:", (int)(width*.75 + 20), (int)(height/2), mPaint);
+			canvas.drawText("" + mf.getTime(), (int)(width*.75 + 20), (int)(height/2 - 50), mPaint);
+			canvas.drawText("Flagged:", (int)(width*.75 + 20), (int)(height/2 - 100), mPaint);
+			canvas.drawText("" + mf.getFlagged(), (int)(width*.75 + 20), (int)(height/2 - 150), mPaint);
 			getHolder().unlockCanvasAndPost(canvas);
 		}
 	}
