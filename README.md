@@ -13,7 +13,7 @@ on the command line:
 
     $ adb install -r MineSweeper.apk
 
-To start the sample, say "ok glass, minesweeper" from the Glass clock
+To start the sample, say "ok glass, play a game with minesweeper" from the Glass clock
 screen or use the touch menu.
 
 ## TODO
